@@ -16,7 +16,6 @@
 	"contributors": [
 		"Christian Areas <me@areas.me>"
 	],
-	"main": "src/index.js",
 	"pi": {
 		"extensions": [
 			"src/index.ts"
