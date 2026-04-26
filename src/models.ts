@@ -2,7 +2,7 @@
 // Types.
 // --------------------------------------------------------------------------------
 
-export interface FriendliAiModel {
+interface Model {
 	id: string
 	reasoning: boolean
 	input: Array<"text" | "image">
@@ -20,7 +20,7 @@ export interface FriendliAiModel {
 // Models
 // --------------------------------------------------------------------------------
 
-export const models: FriendliAiModel[] = [
+export const models: Model[] = [
 	{
 		id: "zai-org/GLM-5.1",
 		reasoning: true,
