@@ -1,0 +1,39 @@
+{
+	"name": "pi-friendliai",
+	"description": "",
+	"keywords": [
+		"pi-package"
+	],
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"license": "MIT",
+	"engines": {
+		"node": ">=24",
+		"npm": ">=11"
+	},
+	"author": "Christian Areas <me@areas.me>",
+	"contributors": [
+		"Christian Areas <me@areas.me>"
+	],
+	"main": "src/index.js",
+	"pi": {
+		"extensions": [
+			"src/index.ts"
+		]
+	},
+	"scripts": {
+		"reinstall": "rm -rf node_modules package-lock.json && npm i",
+		"update:latest": "npx -y npm-check-updates -u && npm i && npm dedupe && npm outdated && npm ls",
+		"ts:check": "tsc --noEmit",
+		"biome:check": "npx biome check",
+		"biome:check:write": "npx biome check --write",
+		"biome:check:write:unsafe": "npx biome check --write --unsafe"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.13",
+		"@mariozechner/pi-coding-agent": "^0.70.2",
+		"@types/node": "^25.6.0",
+		"typescript": "^6.0.3"
+	}
+}
