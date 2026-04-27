@@ -1,6 +1,6 @@
 {
 	"name": "pi-friendliai",
-	"description": "Pi extension that registers FriendliAI's serverless models with both OpenAI Chat Completions and Anthropic Messages APIs.",
+	"description": "A Pi extension that registers FriendliAI's serverless models with both OpenAI Chat Completions and Anthropic Messages APIs.",
 	"keywords": [
 		"pi-package"
 	],
