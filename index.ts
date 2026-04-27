@@ -66,7 +66,6 @@ export default function (pi: ExtensionAPI) {
 			pi.registerProvider(provider.name, {
 				baseUrl: provider.apiBaseUrl,
 				apiKey: "FRIENDLIAI_API_TOKEN",
-				// apiKey: "!security find-generic-password -ws 'friendliai'",
 				api: provider.api,
 				authHeader: true,
 				models: models.map((model) => ({
