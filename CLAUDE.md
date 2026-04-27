@@ -58,9 +58,16 @@ Changes to `models.json`, `index.ts`, or the user's `~/.pi/agent/models.json` re
 - `npm run biome:check` / `:write` / `:write:unsafe` — lint and format
 - `pi -e $(pwd)` — load this extension in a local Pi run
 
+## Display name format (intentional)
+
+Model display names are `${model.id} (${provider.apiLabel})` — e.g. `zai-org/GLM-5.1 (FriendliAI's Chat Completions API)`. The vendor prefix (`zai-org/`) is in the id by design. A previous design considered a `parseFriendliAiId` helper to strip it; rejected by the maintainer. Don't reintroduce it without a new reason.
+
+## Writing style
+
+The README follows the Postman docs voice: action-led headings that include the target ("Install pi-friendliai," "Authenticate with FriendliAI"), step lists that follow `action → state confirmation` ("Run `/login`. Pi opens the provider picker."), section openers that lead with action + benefit, and no `please` / `pick` / hedge words. Match this voice when extending the README.
+
 ## Deferred
 
-- README — intentionally empty; owner fills it before pushing/publishing.
 - npm publish.
 - Verifying `contextWindow` and `maxTokens` against FriendliAI's actual served limits.
 - Feature requests upstream:
