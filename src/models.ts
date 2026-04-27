@@ -1,4 +1,10 @@
 // --------------------------------------------------------------------------------
+// Dependencies.
+// --------------------------------------------------------------------------------
+
+import modelsJson from "./models.json" with { type: "json" }
+
+// --------------------------------------------------------------------------------
 // Types.
 // --------------------------------------------------------------------------------
 
@@ -20,35 +26,6 @@ interface Model {
 // Models
 // --------------------------------------------------------------------------------
 
-export const models: Model[] = [
-	{
-		id: "zai-org/GLM-5.1",
-		reasoning: true,
-		input: ["text"],
-		cost: {
-			input: 1.4,
-			output: 4.4,
-			cacheRead: 0.26,
-			cacheWrite: 0,
-		},
-		// todo: confirm contextWindow and maxTokens are accurate.
-		contextWindow: 200000,
-		maxTokens: 32000,
-	},
-	{
-		id: "zai-org/GLM-5",
-		reasoning: true,
-		input: ["text"],
-		cost: {
-			input: 1.0,
-			output: 3.2,
-			cacheRead: 0.5,
-			cacheWrite: 0,
-		},
-		// todo: confirm contextWindow and maxTokens are accurate.
-		contextWindow: 200000,
-		maxTokens: 32000,
-	},
-]
+export const models = modelsJson as Model[] // ** todo: confirm contextWindow and maxTokens are accurate. **
 
 // --------------------------------------------------------------------------------
