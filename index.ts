@@ -45,7 +45,7 @@ export default function (pi: ExtensionAPI) {
 
 	// When the session starts, register the providers.
 	pi.on("session_start", (_event, context) => {
-		// If providers registered, exit. Guards against false positives and noise.
+		// If the providers are registered, exit (guards against false positives and noise).
 		if (providersRegistered) return
 
 		for (const provider of providers) {
