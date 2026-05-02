@@ -1,6 +1,6 @@
 # pi-friendliai
 
-A [Pi](https://github.com/badlogic/pi-mono) extension that exposes FriendliAI's serverless models under two providers:
+`pi-friendliai` is a [Pi](https://pi.dev) [extension](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent/docs/custom-provider.md) that adds [FriendliAI](https://friendli.ai) models to your Pi.
 
 - `friendliai-chat-completions` — FriendliAI's OpenAI-compatible chat completions endpoint
 - `friendliai-messages` — FriendliAI's Anthropic-compatible messages endpoint
