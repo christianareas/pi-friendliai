@@ -33,13 +33,15 @@ Originally planned for when the override file existed (untrusted user input). Th
 **Auth uses Pi's built-in `/login` flow.**
 `/login` shows a universal provider picker with an "API Key" option for any registered provider — works without an `oauth` block. The extension does **not** declare `oauth`: that would misrepresent a personal access token paste as OAuth. The `apiKey: "FRIENDLIAI_API_TOKEN"` env var name in `registerProvider` is a fallback for headless/CI scenarios.
 
-## Data verification status (as of 2026-04-26)
+## Data verification status (as of 2026-06-13)
 
-- **`cost`** — verified against `https://friendli.ai/models/zai-org/GLM-5.1` and `/GLM-5`.
-- **`contextWindow: 200000`** — *not* corroborated by FriendliAI. HuggingFace `config.json` for both models reports `max_position_embeddings: 202752`. The current value is conservative; whether FriendliAI serves the full architectural context is unverified.
-- **`maxTokens: 32000`** — not from any FriendliAI page; not in HF config (it's a runtime/API setting, not architectural). Origin unverified. Empirical probing of the API would confirm.
+FriendliAI exposes a machine-readable serverless catalog at `https://api.friendli.ai/serverless/v1/models`. It's the OpenAI `/v1/models` shape (a `data[]` array) with FriendliAI extensions: `pricing.{input,output,input_cache_read}`, `context_length`, `max_completion_tokens`, `functionality`, and `deprecation_date`. Unauthenticated GET. This is now the source of truth for `models.json`.
 
-FriendliAI does not currently expose a `/v1/models` endpoint or a machine-readable model catalog on serverless. The `/docs/guides/supported-models` page is JS-rendered and not parseable via plain HTTP.
+- **`cost`, `contextWindow`, `maxTokens`** — taken directly from the endpoint: `pricing.input`/`output` → `cost.input`/`output`, `pricing.input_cache_read` → `cost.cacheRead` (absent ⇒ `0`), `context_length` → `contextWindow`, `max_completion_tokens` → `maxTokens`. The earlier conservative GLM values (`200000` / `32000`) were corrected to the served `202752` / `202752`.
+- **`cacheWrite: 0`** — the endpoint carries no cache-write field; FriendliAI does not price cache writes.
+- **`reasoning` and `input`** — *not* in the endpoint; both are inferred per model and hand-maintained. `input: ["text"]` for all current entries — the endpoint already omits non-text serverless models (e.g. `openai/whisper-large-v3` transcription, `google/gemma-4-31B-it` multimodal), so the catalog it returns is the text-chat set. `reasoning` is a judgment call: the `Instruct` models are `false`; `LGAI-EXAONE/K-EXAONE-236B-A23B`, `MiniMaxAI/MiniMax-M2.5`, and `deepseek-ai/DeepSeek-V3.2` are set to `true` but unverified.
+
+The `/docs/guides/supported-models` page and the `friendli.ai/models` grid are JS-rendered and not parseable via plain HTTP — use the JSON endpoint above instead.
 
 ## Restart vs new session
 
@@ -69,7 +71,5 @@ The README follows the Postman docs voice: action-led headings that include the 
 ## Deferred
 
 - npm publish.
-- Verifying `contextWindow` and `maxTokens` against FriendliAI's actual served limits.
 - Feature requests upstream:
-  - FriendliAI: machine-readable model metadata (`/v1/models` or JSON catalog).
   - pi-mono: extension-exposed `ApiKeyCredential` registration API; using `package.json#name` for the `[Extensions]` display label.
