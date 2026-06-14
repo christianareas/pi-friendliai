@@ -72,7 +72,7 @@ For example, to override the pricing for `zai-org/GLM-5.1`:
     "friendliai-chat-completions": {
       "baseUrl": "https://api.friendli.ai/serverless/v1",
       "api": "openai-completions",
-      "apiKey": "FRIENDLIAI_API_TOKEN",
+      "apiKey": "$FRIENDLIAI_API_TOKEN",
       "authHeader": true,
       "models": [
         {

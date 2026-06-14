@@ -31,7 +31,7 @@ Originally planned to introduce a separate `~/.pi/friendliai-models.json`. Dropp
 Originally planned for when the override file existed (untrusted user input). The override file went away, so the only JSON parsed is `models.json` (in repo, hand-edited). Pi validates the registered config at registration time. Don't add validation without a new reason.
 
 **Auth uses Pi's built-in `/login` flow.**
-`/login` shows a universal provider picker with an "API Key" option for any registered provider — works without an `oauth` block. The extension does **not** declare `oauth`: that would misrepresent a personal access token paste as OAuth. The `apiKey: "FRIENDLIAI_API_TOKEN"` env var name in `registerProvider` is a fallback for headless/CI scenarios.
+`/login` shows a universal provider picker with an "API Key" option for any registered provider — works without an `oauth` block. The extension does **not** declare `oauth`: that would misrepresent a personal access token paste as OAuth. The `apiKey: "$FRIENDLIAI_API_TOKEN"` env var reference in `registerProvider` is a fallback for headless/CI scenarios.
 
 ## Data verification status (as of 2026-06-13)
 
