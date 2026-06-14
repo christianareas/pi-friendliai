@@ -65,7 +65,7 @@ export default function (pi: ExtensionAPI) {
 			// Otherwise, register the provider.
 			pi.registerProvider(provider.name, {
 				baseUrl: provider.apiBaseUrl,
-				apiKey: "FRIENDLIAI_API_TOKEN",
+				apiKey: "$FRIENDLIAI_API_TOKEN",
 				api: provider.api,
 				authHeader: true,
 				models: models.map((model) => ({
