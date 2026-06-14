@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Models
+url: "{{friendliAiBaseUrl}}/models"
+method: GET
+order: 1781392386207
