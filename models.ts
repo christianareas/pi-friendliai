@@ -26,6 +26,6 @@ interface Model {
 // Models
 // ----------------------------------------------------------------------------
 
-export const models = modelsJson as Model[] // ** todo: confirm contextWindow and maxTokens are accurate. **
+export const models = modelsJson as Model[]
 
 // ----------------------------------------------------------------------------
