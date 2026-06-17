@@ -55,8 +55,9 @@ Pi reads this value when no stored credential exists. Use this approach for head
 | `Qwen/Qwen3-235B-A22B-Instruct-2507` | 262,144 | 262,144 | 0.2 | 0.8 | — |
 | `zai-org/GLM-5` | 202,752 | 202,752 | 1.0 | 3.2 | 0.5 |
 | `zai-org/GLM-5.1` | 202,752 | 202,752 | 1.4 | 4.4 | 0.26 |
+| `zai-org/GLM-5.2` | 1,048,576 | 1,048,576 | 1.4 | 4.4 | 0.26 |
 
-Values come from FriendliAI's serverless catalog (`https://api.friendli.ai/serverless/v1/models`) as of 2026-06-13. `reasoning` and `input` are not in the catalog — see [Known limitations](#known-limitations).
+Values come from FriendliAI's serverless catalog (`https://api.friendli.ai/serverless/v1/models`) as of 2026-06-16. `reasoning` and `input` are not in the catalog — see [Known limitations](#known-limitations).
 
 In Pi, run `/model` to switch to a FriendliAI model.
 
@@ -98,7 +99,9 @@ Restart Pi after any update — to your `models.json`, the extension itself, or 
 
 ## Known limitations
 
-- **`reasoning` is inferred.** FriendliAI's catalog doesn't indicate whether a model is a reasoning model, so the `reasoning` flag is set per model by hand. `deepseek-ai/DeepSeek-V3.2`, `LGAI-EXAONE/K-EXAONE-236B-A23B`, and `MiniMaxAI/MiniMax-M2.5` are set to `true` but unverified; correct them if FriendliAI's behavior differs.
+- **Reasoning models fail on the `friendliai-messages` provider.** FriendliAI's Anthropic-compatible Messages API rejects the `thinking.display` field Pi sends for reasoning models, returning `422 invalid_request_error` ("no such field: 'display'"). This hits every model with `reasoning: true` — `zai-org/GLM-5`, `zai-org/GLM-5.1`, `zai-org/GLM-5.2`, `deepseek-ai/DeepSeek-V3.2`, `LGAI-EXAONE/K-EXAONE-236B-A23B`, and `MiniMaxAI/MiniMax-M2.5`. Non-reasoning models (`meta-llama/Llama-3.1-8B-Instruct`, `meta-llama/Llama-3.3-70B-Instruct`, `Qwen/Qwen3-235B-A22B-Instruct-2507`) are unaffected. Use `friendliai-chat-completions` for reasoning models until FriendliAI updates its Messages API. Reported to FriendliAI.
+- **`reasoning` is inferred.** FriendliAI's catalog doesn't indicate whether a model is a reasoning model, so the `reasoning` flag is set per model by hand. `deepseek-ai/DeepSeek-V3.2`, `LGAI-EXAONE/K-EXAONE-236B-A23B`, `MiniMaxAI/MiniMax-M2.5`, and `zai-org/GLM-5.2` are set to `true` but unverified; correct them if FriendliAI's behavior differs.
+- **Two models are scheduled for deprecation.** FriendliAI's catalog dates `meta-llama/Llama-3.1-8B-Instruct` and `meta-llama/Llama-3.3-70B-Instruct` for deprecation on 2026-06-26; they stop responding after that.
 - **"No models available" warning at startup.** Pi prints this warning before extensions register their providers. The providers do appear; the warning is harmless.
 
 ## Contribute to pi-friendliai

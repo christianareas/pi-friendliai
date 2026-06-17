@@ -33,15 +33,36 @@ Originally planned for when the override file existed (untrusted user input). Th
 **Auth uses Pi's built-in `/login` flow.**
 `/login` shows a universal provider picker with an "API Key" option for any registered provider — works without an `oauth` block. The extension does **not** declare `oauth`: that would misrepresent a personal access token paste as OAuth. The `apiKey: "$FRIENDLIAI_API_TOKEN"` env var reference in `registerProvider` is a fallback for headless/CI scenarios.
 
-## Data verification status (as of 2026-06-13)
+## Data verification status (as of 2026-06-16)
 
 FriendliAI exposes a machine-readable serverless catalog at `https://api.friendli.ai/serverless/v1/models`. It's the OpenAI `/v1/models` shape (a `data[]` array) with FriendliAI extensions: `pricing.{input,output,input_cache_read}`, `context_length`, `max_completion_tokens`, `functionality`, and `deprecation_date`. Unauthenticated GET. This is now the source of truth for `models.json`.
 
 - **`cost`, `contextWindow`, `maxTokens`** — taken directly from the endpoint: `pricing.input`/`output` → `cost.input`/`output`, `pricing.input_cache_read` → `cost.cacheRead` (absent ⇒ `0`), `context_length` → `contextWindow`, `max_completion_tokens` → `maxTokens`. The earlier conservative GLM values (`200000` / `32000`) were corrected to the served `202752` / `202752`.
 - **`cacheWrite: 0`** — the endpoint carries no cache-write field; FriendliAI does not price cache writes.
-- **`reasoning` and `input`** — *not* in the endpoint; both are inferred per model and hand-maintained. `input: ["text"]` for all current entries — the endpoint already omits non-text serverless models (e.g. `openai/whisper-large-v3` transcription, `google/gemma-4-31B-it` multimodal), so the catalog it returns is the text-chat set. `reasoning` is a judgment call: the `Instruct` models are `false`; `LGAI-EXAONE/K-EXAONE-236B-A23B`, `MiniMaxAI/MiniMax-M2.5`, and `deepseek-ai/DeepSeek-V3.2` are set to `true` but unverified.
+- **`reasoning` and `input`** — *not* in the endpoint; both are inferred per model and hand-maintained. `input: ["text"]` for all current entries — the endpoint already omits non-text serverless models (e.g. `openai/whisper-large-v3` transcription, `google/gemma-4-31B-it` multimodal), so the catalog it returns is the text-chat set. `reasoning` is a judgment call: the `Instruct` models (`meta-llama/*`, `Qwen/Qwen3-...-Instruct-2507`) are `false`; the `zai-org/GLM-*` models, `LGAI-EXAONE/K-EXAONE-236B-A23B`, `MiniMaxAI/MiniMax-M2.5`, and `deepseek-ai/DeepSeek-V3.2` are `true` — the non-GLM three and the newest `zai-org/GLM-5.2` are unverified.
+- **`deprecation_date`** — carried by the endpoint but not mirrored into `models.json`. As of this pull, `meta-llama/Llama-3.1-8B-Instruct` and `meta-llama/Llama-3.3-70B-Instruct` are dated `2026-06-26`; the rest carry none. `zai-org/GLM-5.2` is the newest entry (1,048,576 context/output).
 
 The `/docs/guides/supported-models` page and the `friendli.ai/models` grid are JS-rendered and not parseable via plain HTTP — use the JSON endpoint above instead.
+
+## Postman collection
+
+`postman/` (plus `.postman/`) holds a Postman collection for re-pulling the catalog that backs `models.json`:
+
+- `postman/collections/FriendliAI/Get Models.request.yaml` — `GET {{friendliAiBaseUrl}}/models`, unauthenticated. Returns the serverless catalog (the `data[]` array described under "Data verification status").
+- `postman/environments/Curated Models.environment.yaml` — defines `friendliAiBaseUrl` (empty in the repo; set it to `https://api.friendli.ai/serverless/v1` so the request resolves to `https://api.friendli.ai/serverless/v1/models`).
+- `.postman/resources.yaml`, `postman/collections/FriendliAI/.resources/definition.yaml`, `postman/globals/workspace.globals.yaml` — Postman workspace/resource metadata.
+
+Workflow: run "Get Models," then reconcile `cost` / `contextWindow` / `maxTokens` into `models.json` per "Data verification status." README coverage is deferred (tracked by the maintainer).
+
+## Known issue: Messages API rejects thinking config
+
+The `friendliai-messages` provider returns `422 invalid_request_error` for any `reasoning: true` model: FriendliAI's `orca.MessagesThinkingConfig` rejects the `thinking.display` field that Pi's Anthropic-messages client emits (`no such field: 'display'`). Non-reasoning models are unaffected, so the chat-completions provider works for everything and the three `Instruct` models work under messages too.
+
+This is server-side, not a registration bug. The error is a field-level 422 from FriendliAI's request parser, which means the request authenticated, routed, and parsed down to the `thinking` sub-object before being rejected — registration (`baseUrl`, `api`, `apiKey`, model fields) is correct and validates against `ProviderConfig` / `ProviderModelConfig`. `reasoning: true` is the accurate flag for these models; `display` is added by Pi's client, not by this extension.
+
+**A client-side workaround was rejected.** One attempt cast the model config to `any`, set `reasoning: false`, and added `compat: { thinkingLevelMap: { ...: null } }` for the messages provider. `thinkingLevelMap` is a top-level `ProviderModelConfig` field, not a `compat` member — nesting it under `compat` only compiled because of the `any` cast and did nothing; the load-bearing line was `reasoning: false`, which silently disables reasoning for genuine reasoning models on the messages provider. Don't reintroduce it.
+
+The fix belongs upstream (reported to FriendliAI). If a local stopgap is ever needed, the clean form is a top-level `thinkingLevelMap` (levels → `null`) and/or `reasoning: false` scoped to the messages provider — no `any` cast.
 
 ## Restart vs new session
 
@@ -71,5 +92,7 @@ The README follows the Postman docs voice: action-led headings that include the 
 ## Deferred
 
 - npm publish.
+- FriendliAI: fix the Messages API rejecting `thinking.display` (`orca.MessagesThinkingConfig`) so `reasoning: true` models work under `friendliai-messages`. Reported — see "Known issue: Messages API rejects thinking config" above. Optional local stopgap if unfixed: top-level `thinkingLevelMap` / `reasoning: false` scoped to the messages provider.
+- Re-check `meta-llama/*` after their `2026-06-26` deprecation date; remove from `models.json` if the catalog drops them.
 - Feature requests upstream:
   - pi-mono: extension-exposed `ApiKeyCredential` registration API; using `package.json#name` for the `[Extensions]` display label.
