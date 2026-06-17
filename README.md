@@ -1,49 +1,93 @@
 # pi-friendliai
 
-`pi-friendliai` is a [Pi](https://pi.dev) [extension](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent/docs/custom-provider.md) that adds [FriendliAI](https://friendli.ai) models to your Pi.
+`pi-friendliai` is a [Pi](https://pi.dev) [extension](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent/docs/custom-provider.md) that adds [FriendliAI](https://friendli.ai)'s serverless models to Pi. Install it, authenticate, and call any FriendliAI model from Pi's model chooser.
 
-- `friendliai-chat-completions` — FriendliAI's OpenAI-compatible chat completions endpoint
-- `friendliai-messages` — FriendliAI's Anthropic-compatible messages endpoint
+The extension registers two providers that serve the same models over different protocols:
 
-Both providers serve the same models. Choose the protocol that matches your workflow.
+- **`friendliai-chat-completions`** — FriendliAI's OpenAI-compatible Chat Completions endpoint.
+- **`friendliai-messages`** — FriendliAI's Anthropic-compatible Messages endpoint.
+
+Choose the protocol that matches your workflow.
 
 ## Install pi-friendliai
 
-Install pi-friendliai globally:
+Install pi-friendliai globally to make FriendliAI's models available in every Pi session:
 
 ```bash
 pi install git:github.com/christianareas/pi-friendliai
 ```
 
-To install for a single project, add the `-l` flag. Pi creates a `.pi/` directory next to your project:
+To scope the extension to a single project, add the `-l` flag. Pi creates a `.pi/` directory next to your project:
 
 ```bash
 pi install git:github.com/christianareas/pi-friendliai -l
 ```
 
-## Authenticate with FriendliAI
+## Use Pi with FriendliAI
 
-Generate a personal access token at <https://friendli.ai/suite/setting/tokens>, then authenticate from inside Pi:
+Set up Pi to connect to FriendliAI. Once you complete these steps, Pi will send requests to FriendliAI.
 
-1. Run `/login`. Pi opens the provider picker.
-2. Select a FriendliAI provider, then choose **API Key**.
-3. Paste your token. Pi stores it in `~/.pi/agent/auth.json` and reuses it on subsequent launches.
+### Create a Friendli Suite Account
 
-Authenticate each provider separately.
+If you haven't already, [sign up](https://auth.friendli.ai/sign-up) for an account.
 
-### Use an environment variable
+### Sign In
 
-Set `FRIENDLIAI_API_TOKEN` in your environment:
+Then, [sign in](https://auth.friendli.ai/). Friendli Suite opens your dashboard.
+
+### Create a FriendliAI API Key
+
+1. In the left sidebar, click **Settings**. Then, click **API Keys**.
+
+2. In the upper-right corner, click **Create API Key**.
+
+3. Click **Copy**.
+
+### Set Up Pi
+
+1. In your terminal, run the following command:
+
+   ```bash
+   pi
+   ```
+
+   Pi opens.
+
+2. Run the following Pi slash command:
+
+   ```bash
+   /login
+   ```
+
+3. Select **Use an API Key**.
+
+4. Choose `friendliai-chat-completions` or `friendliai-messages`.
+
+5. Paste your API key. Pi stores it in `~/.pi/agent/auth.json`.
+
+6. Run the following Pi slash command:
+
+   ```bash
+   /model
+   ```
+
+7. Choose a model.
+
+You're ready to send your first prompt.
+
+### Authenticate with an Environment Variable
+
+For headless setups, CI, or shared machines, set your API key as an environment variable instead:
 
 ```bash
 export FRIENDLIAI_API_TOKEN=your-token-here
 ```
 
-Pi reads this value when no stored credential exists. Use this approach for headless setups, CI, or shared machines.
+Pi reads `FRIENDLIAI_API_TOKEN` whenever no stored credential exists.
 
-## Models
+## Available Models
 
-`pi-friendliai` ships with the following models, available under both providers:
+Run `/model` in Pi to switch to a FriendliAI model. The extension ships with FriendliAI's serverless catalog, available under both providers:
 
 | Model ID | Context | Max output | Input ($/1M) | Output ($/1M) | Cache read ($/1M) |
 |---|---|---|---|---|---|
@@ -57,13 +101,11 @@ Pi reads this value when no stored credential exists. Use this approach for head
 | `zai-org/GLM-5.1` | 202,752 | 202,752 | 1.4 | 4.4 | 0.26 |
 | `zai-org/GLM-5.2` | 1,048,576 | 1,048,576 | 1.4 | 4.4 | 0.26 |
 
-Values come from FriendliAI's serverless catalog (`https://api.friendli.ai/serverless/v1/models`) as of 2026-06-16. `reasoning` and `input` are not in the catalog — see [Known limitations](#known-limitations).
+Values come from FriendliAI's serverless catalog (`https://api.friendli.ai/serverless/v1/models`) as of 2026-06-16. The `reasoning` and `input` fields aren't in the catalog — see [Known Limitations](#known-limitations).
 
-In Pi, run `/model` to switch to a FriendliAI model.
+## Override or Extend the Defaults
 
-## Override or extend the defaults
-
-Define `friendliai-chat-completions` or `friendliai-messages` in your `~/.pi/agent/models.json` to override the extension's defaults. The extension detects the conflict, defers entirely to your configuration for that provider, and notifies you on session start.
+Define `friendliai-chat-completions` or `friendliai-messages` in your `~/.pi/agent/models.json` to take over a provider. The extension detects the conflict, defers entirely to your configuration for that provider, and notifies you on session start.
 
 For example, to override the pricing for `zai-org/GLM-5.1`:
 
@@ -91,24 +133,27 @@ For example, to override the pricing for `zai-org/GLM-5.1`:
 }
 ```
 
-Conflict detection runs per provider. Configuring `friendliai-chat-completions` does not affect the extension's defaults for `friendliai-messages`.
+Conflict detection runs per provider. Overriding `friendliai-chat-completions` leaves the extension's defaults for `friendliai-messages` untouched.
 
-## Apply your changes
+## Apply Your Changes
 
-Restart Pi after any update — to your `models.json`, the extension itself, or after installing a new version. New sessions within a running Pi process inherit the existing in-memory state and miss the changes.
+> [!IMPORTANT]
+> Restart Pi to load any change — to your `~/.pi/agent/models.json`, to the extension, or after you install a new version. A new session inside a running Pi process keeps the existing in-memory state and misses the change.
 
-## Known limitations
+## Known Limitations
 
-- **Reasoning models fail on the `friendliai-messages` provider.** FriendliAI's Anthropic-compatible Messages API rejects the `thinking.display` field Pi sends for reasoning models, returning `422 invalid_request_error` ("no such field: 'display'"). This hits every model with `reasoning: true` — `zai-org/GLM-5`, `zai-org/GLM-5.1`, `zai-org/GLM-5.2`, `deepseek-ai/DeepSeek-V3.2`, `LGAI-EXAONE/K-EXAONE-236B-A23B`, and `MiniMaxAI/MiniMax-M2.5`. Non-reasoning models (`meta-llama/Llama-3.1-8B-Instruct`, `meta-llama/Llama-3.3-70B-Instruct`, `Qwen/Qwen3-235B-A22B-Instruct-2507`) are unaffected. Use `friendliai-chat-completions` for reasoning models until FriendliAI updates its Messages API. Reported to FriendliAI.
-- **`reasoning` is inferred.** FriendliAI's catalog doesn't indicate whether a model is a reasoning model, so the `reasoning` flag is set per model by hand. `deepseek-ai/DeepSeek-V3.2`, `LGAI-EXAONE/K-EXAONE-236B-A23B`, `MiniMaxAI/MiniMax-M2.5`, and `zai-org/GLM-5.2` are set to `true` but unverified; correct them if FriendliAI's behavior differs.
-- **Two models are scheduled for deprecation.** FriendliAI's catalog dates `meta-llama/Llama-3.1-8B-Instruct` and `meta-llama/Llama-3.3-70B-Instruct` for deprecation on 2026-06-26; they stop responding after that.
-- **"No models available" warning at startup.** Pi prints this warning before extensions register their providers. The providers do appear; the warning is harmless.
+> [!WARNING]
+> **Reasoning models fail on the `friendliai-messages` provider.** FriendliAI's Anthropic-compatible Messages API rejects the `thinking.display` field Pi sends for reasoning models and returns `422 invalid_request_error` ("no such field: 'display'"). This affects every model with `reasoning: true` — the GLM, DeepSeek, K-EXAONE, and MiniMax entries. Run them under `friendliai-chat-completions` instead; the Llama and Qwen entries work on either provider. Reported to FriendliAI.
+
+- **`reasoning` is inferred.** FriendliAI's catalog doesn't say whether a model reasons, so the extension sets each `reasoning` flag by hand. `deepseek-ai/DeepSeek-V3.2`, `LGAI-EXAONE/K-EXAONE-236B-A23B`, `MiniMaxAI/MiniMax-M2.5`, and `zai-org/GLM-5.2` are set to `true` but unverified; correct them if FriendliAI's behavior differs.
+- **Two models are scheduled for deprecation.** FriendliAI dates `meta-llama/Llama-3.1-8B-Instruct` and `meta-llama/Llama-3.3-70B-Instruct` for deprecation on 2026-06-26. They stop responding after that.
+- **Pi warns "No models available" at startup.** Pi prints this warning before the extension registers its providers. The providers still load; the warning is harmless.
 
 ## Contribute to pi-friendliai
 
-To add or update a model, edit `models.json`. Both providers register the new entry automatically. Verify `cost`, `contextWindow`, and `maxTokens` against FriendliAI's serverless catalog at <https://api.friendli.ai/serverless/v1/models> and note the verification date in the pull request description.
+Add or update a model by editing `models.json` — both providers register the change automatically. Verify `cost`, `contextWindow`, and `maxTokens` against FriendliAI's serverless catalog at <https://api.friendli.ai/serverless/v1/models>, and note the verification date in your pull request.
 
-### Run pi-friendliai locally
+### Run pi-friendliai Locally
 
 ```bash
 git clone https://github.com/christianareas/pi-friendliai
@@ -117,12 +162,12 @@ npm install
 pi -e $(pwd)
 ```
 
-### Run checks
+### Run the Checks
 
 ```bash
-npm run ts:check          # TypeScript
+npm run ts:check          # Type-check with tsc
 npm run biome:check       # Lint and format
-npm run biome:check:write # Apply lint/format fixes
+npm run biome:check:write # Apply lint and format fixes
 ```
 
 ## License
