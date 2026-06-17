@@ -1,6 +1,6 @@
 {
 	"name": "pi-friendliai",
-	"description": "",
+	"description": "A Pi extension that registers FriendliAI's serverless models with both OpenAI Chat Completions and Anthropic Messages APIs.",
 	"keywords": [
 		"pi-package"
 	],
@@ -18,7 +18,7 @@
 	],
 	"pi": {
 		"extensions": [
-			"src/index.ts"
+			"index.ts"
 		]
 	},
 	"scripts": {
@@ -30,9 +30,9 @@
 		"biome:check:write:unsafe": "npx biome check --write --unsafe"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.13",
-		"@mariozechner/pi-coding-agent": "^0.70.2",
-		"@types/node": "^25.6.0",
+		"@biomejs/biome": "^2.5.0",
+		"@mariozechner/pi-coding-agent": "^0.73.1",
+		"@types/node": "^25.9.3",
 		"typescript": "^6.0.3"
 	}
 }

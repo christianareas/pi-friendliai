@@ -1,0 +1,4 @@
+name: Curated Models
+values:
+  - key: friendliAiBaseUrl
+    value: ''
